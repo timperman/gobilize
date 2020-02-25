@@ -1,0 +1,11 @@
+{
+    "appPort": 8080,
+	"dockerFile": "Dockerfile",
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/bash",
+		"go.gopath": "/go"
+	},
+	"extensions": [
+		"ms-vscode.go"
+	]
+}
