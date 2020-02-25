@@ -5,6 +5,7 @@
 		"terminal.integrated.shell.linux": "/bin/bash"
 	},
 	"extensions": [
-		"ms-vscode.go"
+		"ms-vscode.go",
+		"vscodevim.vim"
 	]
 }
