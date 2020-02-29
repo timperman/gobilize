@@ -11,6 +11,9 @@ import (
 	"github.com/timperman/gobilize/mobilize"
 )
 
+var start, zip string
+var days, orgID, maxDistance int
+
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List events",
@@ -30,6 +33,7 @@ var listCmd = &cobra.Command{
 			TimeslotStart:  fmt.Sprintf("gte_%d", startTime.Unix()),
 			TimeslotEnd:    fmt.Sprintf("lte_%d", endTime.Unix()),
 			ZipCode:        zip,
+			MaxDistance:    maxDistance,
 		})
 		if err != nil {
 			return err
@@ -51,5 +55,11 @@ var listCmd = &cobra.Command{
 }
 
 func init() {
+	listCmd.Flags().StringVarP(&start, "start", "s", "", fmt.Sprintf("Event start time in %s format (default now)", time.RFC3339))
+	listCmd.Flags().IntVarP(&days, "days", "d", 7, "Number of days since start")
+	listCmd.Flags().IntVarP(&orgID, "org-id", "o", 1767, "Organization ID")
+	listCmd.Flags().StringVarP(&zip, "zip-code", "z", "", "Events near ZIP code")
+	listCmd.Flags().IntVar(&maxDistance, "max-dist", 0, "Maximum distance")
+
 	rootCmd.AddCommand(listCmd)
 }

@@ -13,6 +13,7 @@ type ListEventsRequest struct {
 	TimeslotStart   string
 	TimeslotEnd     string
 	ZipCode         string
+	MaxDistance     int
 	GroupDateFormat string
 }
 
@@ -24,12 +25,9 @@ type ListEventsResponse struct {
 }
 
 func ListEventsByDate(req ListEventsRequest) (map[string][]Event, error) {
-	listURL, _ := url.Parse("https://api.mobilize.us/v1/events")
+	listURL, _ := url.Parse(fmt.Sprintf("https://api.mobilize.us/v1/organizations/%d/events", req.OrganizationID))
 
 	params := url.Values{}
-	if req.OrganizationID > 0 {
-		params.Add("organization_id", fmt.Sprintf("%d", req.OrganizationID))
-	}
 	if req.TimeslotStart != "" {
 		params.Add("timeslot_start", req.TimeslotStart)
 	} else {
@@ -40,6 +38,9 @@ func ListEventsByDate(req ListEventsRequest) (map[string][]Event, error) {
 	}
 	if req.ZipCode != "" {
 		params.Add("zipcode", req.ZipCode)
+	}
+	if req.MaxDistance != 0 {
+		params.Add("max_dist", fmt.Sprintf("%d", req.MaxDistance))
 	}
 	listURL.RawQuery = params.Encode()
 
