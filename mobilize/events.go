@@ -9,10 +9,11 @@ import (
 )
 
 type ListEventsRequest struct {
-	OrganizationID int
-	TimeslotStart  string
-	TimeslotEnd    string
-	ZipCode        string
+	OrganizationID  int
+	TimeslotStart   string
+	TimeslotEnd     string
+	ZipCode         string
+	GroupDateFormat string
 }
 
 type ListEventsResponse struct {
@@ -22,7 +23,7 @@ type ListEventsResponse struct {
 	Data     []Event
 }
 
-func ListEvents(req ListEventsRequest) ([]Event, error) {
+func ListEventsByDate(req ListEventsRequest) (map[string][]Event, error) {
 	listURL, _ := url.Parse("https://api.mobilize.us/v1/events")
 
 	params := url.Values{}
@@ -42,18 +43,37 @@ func ListEvents(req ListEventsRequest) ([]Event, error) {
 	}
 	listURL.RawQuery = params.Encode()
 
-	response, err := http.Get(listURL.String())
-	if err != nil {
-		return nil, err
+	timeFormat := req.GroupDateFormat
+	if timeFormat == "" {
+		timeFormat = "Monday, January 2, 2006"
 	}
 
-	data, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
+	events := make(map[string][]Event, 0)
+	next := listURL.String()
+	for next != "" {
+		response, err := http.Get(next)
+		if err != nil {
+			return events, err
+		}
+
+		data, err := ioutil.ReadAll(response.Body)
+		if err != nil {
+			return events, err
+		}
+
+		var listResponse ListEventsResponse
+		json.Unmarshal(data, &listResponse)
+
+		for _, e := range listResponse.Data {
+			date := e.Timeslots[0].StartDate.Time().Format(timeFormat)
+			if dateEvents, ok := events[date]; ok {
+				events[date] = append(dateEvents, e)
+			} else {
+				events[date] = []Event{e}
+			}
+		}
+
+		next = listResponse.Next
 	}
-
-	var listResponse ListEventsResponse
-	json.Unmarshal(data, &listResponse)
-
-	return listResponse.Data, nil
+	return events, nil
 }

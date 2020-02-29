@@ -26,7 +26,7 @@ func (t Time) Unix() int64 {
 }
 
 func (t Time) Time() time.Time {
-	return time.Time(t).UTC()
+	return time.Time(t).Local()
 }
 
 func (t Time) String() string {

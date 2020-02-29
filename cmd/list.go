@@ -25,7 +25,7 @@ var listCmd = &cobra.Command{
 		}
 		endTime := startTime.Add(time.Duration(days) * 24 * time.Hour)
 
-		events, err := mobilize.ListEvents(mobilize.ListEventsRequest{
+		eventsByDate, err := mobilize.ListEventsByDate(mobilize.ListEventsRequest{
 			OrganizationID: orgID,
 			TimeslotStart:  fmt.Sprintf("gte_%d", startTime.Unix()),
 			TimeslotEnd:    fmt.Sprintf("lte_%d", endTime.Unix()),
@@ -36,10 +36,14 @@ var listCmd = &cobra.Command{
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "Title", "URL"})
+		table.SetHeader([]string{"Date", "Title", "URL"})
+		table.SetAutoMergeCells(true)
 		table.SetAutoWrapText(false)
-		for _, event := range events {
-			table.Append([]string{fmt.Sprintf("%d", event.ID), event.Title, event.BrowserURL})
+		for date, events := range eventsByDate {
+			for _, event := range events {
+				title := fmt.Sprintf("%s - %s", event.Timeslots[0].StartDate.Time().Format("3:04pm"), event.Title)
+				table.Append([]string{date, title, event.BrowserURL})
+			}
 		}
 		table.Render()
 		return nil
